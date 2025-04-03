@@ -11,7 +11,7 @@ file_timestamp = datetime.now().strftime("./logs/log_%Y-%m-%d_%H-%M-%S.log")
 os.makedirs("./logs", exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
-    format="%(levelname)s: %(message)s",
+    format="%(asctime)s | %(levelname)s | %(message)s",
     handlers=[
         logging.FileHandler(file_timestamp),
         logging.StreamHandler()
