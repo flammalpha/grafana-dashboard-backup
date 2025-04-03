@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 from typing import Dict, List
 import requests
 import os
@@ -6,7 +7,16 @@ import json
 import logging
 from dotenv import load_dotenv
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+file_timestamp = datetime.now().strftime("./logs/log_%Y-%m-%d_%H-%M-%S.log")
+os.makedirs("./logs", exist_ok=True)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s: %(message)s",
+    handlers=[
+        logging.FileHandler(file_timestamp),
+        logging.StreamHandler()
+    ]
+)
 
 parser = argparse.ArgumentParser(description="Grafana Dashboard Importer")
 parser.add_argument("-u", "--url", type=str, help="Grafana URL")
