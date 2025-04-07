@@ -153,11 +153,11 @@ def export_dashboards():
         return
 
     folder_structure = extract_folders(dashboards)
+    # json_dump(folder_structure, f"{DASHBOARD_FOLDER}/folder_export.json")
+
     extract_dashboards(dashboards, folder_structure)
 
-    json_dump(folder_structure, f"{DASHBOARD_FOLDER}/folder_export.json")
-
-    json_dump(dashboards, f"{DASHBOARD_FOLDER}/dashboard_export.json")
+    return dashboards
 
 
 def get_all_datasources():
@@ -173,9 +173,15 @@ def export_datasources():
     if not data_sources:
         logging.info("No datasources found")
         return
-
-    json_dump(data_sources, f"{DASHBOARD_FOLDER}/datasource_export.json")
+    
+    return data_sources
 
 
 if __name__ == "__main__":
-    export_dashboards()
+    dashboards = export_dashboards()
+    json_dump(dashboards, f"{DASHBOARD_FOLDER}/dashboard_export.json")
+
+    data_sources = export_datasources()
+    json_dump(data_sources, f"{DASHBOARD_FOLDER}/datasource_export.json")
+
+    logging.info("DONE")
