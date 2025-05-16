@@ -72,9 +72,9 @@ def logged_request_get(url: str):
         logging.error("An error occurred: %s", err)
 
 
-def logged_request_post(url, json):
+def logged_request_post(url, data):
     try:
-        response = requests.post(url, headers=HEADERS, json=json, verify=False)
+        response = requests.post(url, headers=HEADERS, json=data, verify=False)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.HTTPError as http_err:
@@ -153,6 +153,8 @@ def ensure_folders(folder_structure: List[Dict]):
     while missing_folders:
         remaining = []
         for folder in missing_folders:
+            if folder["uid"] in existing_list:
+                continue
             parent_uid = folder["parentUid"]
             if parent_uid is None or parent_uid in existing_list:
                 logged_request_post(url, folder)
@@ -168,14 +170,14 @@ def ensure_folders(folder_structure: List[Dict]):
         missing_folders = remaining
 
 
-def import_dashboard(dashboard_data, folder_uid):
+def import_dashboard(dashboard_data, folder_uid, overwrite):
     """Loads a dashboard JSON from file system."""
 
     dashboard_data = {
         "dashboard": dashboard_data,
         "folderUid": folder_uid,
         "message": "Automated Import",
-        "overwrite": True
+        "overwrite": overwrite
     }
 
     import_url = f"{GRAFANA_URL}/api/dashboards/db"
@@ -219,6 +221,16 @@ def get_all_datasources():
     return response
 
 
+def get_all_dashboards_uid():
+    url = f"{GRAFANA_URL}/api/search?query=&type=dash-db"
+    response = logged_request_get(url)
+    existing_list = list()
+    for dashboard in response:
+        if "uid" in dashboard:
+            existing_list.append(dashboard["uid"])
+    return existing_list
+
+
 def replace_datasource(dashboard_data, replace_rules):
     if isinstance(dashboard_data, dict):
         if "datasource" in dashboard_data:
@@ -248,6 +260,7 @@ if __name__ == "__main__":
         data_sources, new_data_sources)
 
     dashboards = load_dashboard_export()
+    existing_dashbboards_list = get_all_dashboards_uid()
 
     folder_structure = extract_folders(dashboards)
 
@@ -268,6 +281,8 @@ if __name__ == "__main__":
             dashboard_data = json_load(file_path)
             new_dashboard_data = replace_datasource(
                 dashboard_data, datasource_replace_rules)
-            import_dashboard(new_dashboard_data, folder_uid)
+            dashboard_uid = new_dashboard_data["uid"]
+            exists = dashboard_uid in existing_dashbboards_list
+            import_dashboard(new_dashboard_data, folder_uid, exists)
 
     logging.info("DONE")
