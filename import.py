@@ -260,7 +260,7 @@ if __name__ == "__main__":
         data_sources, new_data_sources)
 
     dashboards = load_dashboard_export()
-    existing_dashbboards_list = get_all_dashboards_uid()
+    existing_dashboards_list = get_all_dashboards_uid()
 
     folder_structure = extract_folders(dashboards)
 
@@ -282,7 +282,7 @@ if __name__ == "__main__":
             new_dashboard_data = replace_datasource(
                 dashboard_data, datasource_replace_rules)
             dashboard_uid = new_dashboard_data["uid"]
-            exists = dashboard_uid in existing_dashbboards_list
+            exists = dashboard_uid in existing_dashboards_list
             import_dashboard(new_dashboard_data, folder_uid, exists)
 
     logging.info("DONE")
