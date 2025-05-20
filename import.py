@@ -1,6 +1,7 @@
 import argparse
+import copy
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List
 import requests
 import os
 import json
@@ -173,16 +174,20 @@ def ensure_folders(folder_structure: List[Dict]):
 def import_dashboard(dashboard_data, folder_uid, overwrite):
     """Loads a dashboard JSON from file system."""
 
-    dashboard_data = {
-        "dashboard": dashboard_data,
+    data_copy = copy.deepcopy(dashboard_data)
+
+    del data_copy["id"] # Remove ID to avoid conflicts
+
+    import_dashboard_data = {
+        "dashboard": data_copy,
         "folderUid": folder_uid,
         "message": "Automated Import",
         "overwrite": overwrite
     }
 
     import_url = f"{GRAFANA_URL}/api/dashboards/db"
-    if logged_request_post(import_url, dashboard_data):
-        logging.info("Imported: %s", dashboard_data["dashboard"]["title"])
+    if logged_request_post(import_url, import_dashboard_data):
+        logging.info("Imported: %s", import_dashboard_data["dashboard"]["title"])
 
 
 def load_datasource_export():
